@@ -6,6 +6,8 @@ from theme import black_theme_settings
 
 
 IMG_DIR = path.abspath(path.join(path.dirname(__file__), path.pardir, 'img'))
+WIDTH_MIN = 600
+HEIGHT_MIN = 400
 
 
 def gui():
@@ -15,9 +17,14 @@ def gui():
 			self.__logo = tk.PhotoImage(file=path.join(IMG_DIR, image_png))
 			parent.add(self.frame, text=title, image=self.__logo, compound='left')
 	
+	def login_onclick():
+		username = username_entry.get()
+		password = password_entry.get()
+		print(username, password)           # Replace with IMAP login handle #
+	
 	root = tk.Tk()
 	root.title("EMail Client")
-	root.geometry('600x500')
+	root.geometry(f"{WIDTH_MIN}x{HEIGHT_MIN}")
 	root.update()
 	root.minsize(root.winfo_width(), root.winfo_height())
 	
@@ -36,11 +43,15 @@ def gui():
 	label1.pack(padx=10, pady=10, anchor='w')
 	
 	login_frame = ttk.Frame(user.frame)
-	login_frame.pack(pady=20)
+	login_frame.pack(padx=60, pady=20, fill='x')
+	login_frame.columnconfigure(1, weight=1)
 	ttk.Label(login_frame, text="Username: ").grid(row=0, column=0)
-	ttk.Entry(login_frame, font=('Arial', 12, 'bold'), width=30).grid(row=0, column=1)
+	username_entry = ttk.Entry(login_frame, font=('Arial', 14, 'bold'))
+	username_entry.grid(row=0, column=1, sticky='ew')
 	ttk.Label(login_frame, text="Password: ").grid(row=1, column=0)
-	ttk.Entry(login_frame, font=('Arial', 12, 'bold'), width=30, show='*').grid(row=1, column=1)
+	password_entry = ttk.Entry(login_frame, font=('Arial', 12, 'bold'), width=30, show='*')
+	password_entry.grid(row=1, column=1, sticky='ew')
+	ttk.Button(user.frame, text="Login", command=login_onclick).pack(padx=(WIDTH_MIN / 3), fill='x')
 	
 	root.mainloop()
 
