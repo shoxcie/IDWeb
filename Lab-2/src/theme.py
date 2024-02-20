@@ -10,7 +10,8 @@ black_theme_settings = {
 	'TNotebook': {
 		'configure': {
 			"padding": [-1],
-			"tabposition": 'n'
+			"tabposition": 'n',
+			
 		}
 	},
 	'TNotebook.Tab': {
@@ -28,6 +29,18 @@ black_theme_settings = {
 				('selected', 'white')
 			]
 			# "expand": [("selected", [1, 1, 1, 0])]
+		}
+	},
+	'TEntry': {
+		'configure': {
+			'fieldbackground': 'black',
+			'foreground': 'white',
+			'insertcolor': 'white',
+			'selectbackground': 'gray30',
+			'selectforeground': 'red',
+			'insertwidth': 2,
+			'padding': 10,
+			'borderwidth': 4,
 		}
 	}
 }

@@ -17,7 +17,7 @@ def gui():
 	
 	root = tk.Tk()
 	root.title("EMail Client")
-	root.geometry('500x400')
+	root.geometry('600x500')
 	root.update()
 	root.minsize(root.winfo_width(), root.winfo_height())
 	
@@ -27,12 +27,20 @@ def gui():
 	
 	notebook = ttk.Notebook(root)
 	notebook.pack(expand=True, fill='both')
+	user = Tab(notebook, " User", "user.png")
 	inbox = Tab(notebook, " Inbox", 'inbox.png')
 	outbox = Tab(notebook, " Outbox", 'outbox.png')
 	message = Tab(notebook, " Message", 'message.png')
 	
 	label1 = tk.Label(inbox.frame, text="Hello, Inbox!")
 	label1.pack(padx=10, pady=10, anchor='w')
+	
+	login_frame = ttk.Frame(user.frame)
+	login_frame.pack(pady=20)
+	ttk.Label(login_frame, text="Username: ").grid(row=0, column=0)
+	ttk.Entry(login_frame, font=('Arial', 12, 'bold'), width=30).grid(row=0, column=1)
+	ttk.Label(login_frame, text="Password: ").grid(row=1, column=0)
+	ttk.Entry(login_frame, font=('Arial', 12, 'bold'), width=30, show='*').grid(row=1, column=1)
 	
 	root.mainloop()
 
