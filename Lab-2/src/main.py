@@ -17,6 +17,14 @@ def gui():
 			self.__logo = tk.PhotoImage(file=path.join(IMG_DIR, image_png))
 			parent.add(self.frame, text=title, image=self.__logo, compound='left')
 	
+	class AutoScrollbar(ttk.Scrollbar):
+		def set(self, low, high):
+			if float(low) <= 0.0 and float(high) >= 1.0:
+				self.pack_forget()
+			else:
+				self.pack(side='left', fill='y')
+			ttk.Scrollbar.set(self, low, high)
+	
 	def login_onclick():
 		username = username_entry.get()
 		password = password_entry.get()
@@ -44,7 +52,7 @@ def gui():
 	
 	# User #
 	login_frame = ttk.Frame(user.frame)
-	login_frame.pack(padx=60, pady=20, fill='x')
+	login_frame.pack(padx=40, pady=20, fill='x')
 	login_frame.columnconfigure(1, weight=1)
 	ttk.Label(login_frame, text="Username: ").grid(row=0, column=0)
 	username_entry = ttk.Entry(login_frame, font=('Arial', 14, 'bold'))
@@ -54,7 +62,34 @@ def gui():
 	password_entry.grid(row=1, column=1, sticky='ew')
 	ttk.Button(user.frame, text="Login", command=login_onclick).pack(padx=(WIDTH_MIN / 3), fill='x')
 	status_frame = ttk.Frame(user.frame)
-	status_frame.pack(anchor='w', padx=60, pady=20)
+	status_frame.pack(anchor='w', padx=40, pady=20)
+	
+	# Message #
+	header_frame = ttk.Frame(message.frame)
+	header_frame.pack(padx=40, pady=20, fill='x')
+	header_frame.columnconfigure(1, weight=1)
+	ttk.Label(header_frame, text="   Email: ").grid(row=0, column=0)
+	email_entry = ttk.Entry(header_frame, font=('Arial', 14, 'bold'))
+	email_entry.grid(row=0, column=1, sticky='ew')
+	ttk.Label(header_frame, text="Subject: ").grid(row=1, column=0)
+	subject_entry = ttk.Entry(header_frame, font=('Arial', 14, 'bold'))
+	subject_entry.grid(row=1, column=1, sticky='ew')
+	text = tk.Text(
+		message.frame,
+		background='black',
+		foreground='white',
+		insertbackground='white',
+		selectbackground='gray30',
+		insertwidth=2,
+		font=('Arial', 14),
+		border=4,
+		width=0,
+		height=0
+	)
+	text.pack(expand=True, fill='both')
+	vsb = AutoScrollbar(message.frame, orient='vertical', command=text.yview)
+	text.configure(yscrollcommand=vsb.set)
+	ttk.Button(message.frame, text="Send").pack(side='bottom', fill='x')
 	
 	root.mainloop()
 
