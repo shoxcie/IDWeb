@@ -15,8 +15,17 @@ def gui():
 	class Tab:
 		def __init__(self, parent: ttk.Notebook, title: str, image_png: str):
 			self.frame = ttk.Frame(parent)
+			self.__notebook = parent
+			self.__id = len(self.__notebook.tabs())
 			self.__logo = tk.PhotoImage(file=path.join(IMG_DIR, image_png))
 			parent.add(self.frame, text=title, image=self.__logo, compound='left')
+		
+		def show(self):
+			self.__notebook.add(self.__notebook.tabs()[self.__id])
+		
+		def hide(self):
+			self.__notebook.hide(self.__id)
+			return self
 	
 	class AutoScrollbar(ttk.Scrollbar):
 		def set(self, low, high):
@@ -29,10 +38,18 @@ def gui():
 	def login_onclick():
 		username = username_entry.get()
 		password = password_entry.get()
-		print(username, password)           # Replace with IMAP login handle #
-		
-		ttk.Label(status_frame, text="Status:").pack(side='left')
-		ttk.Label(status_frame, text="Logged in", foreground='green').pack(side='left')
+		if True:							# Replace with SMTP/IMAP login handle #
+			inbox.show()
+			outbox.show()
+			message.show()
+	
+	def logout_onclick():
+		username_entry.delete(0, tk.END)
+		password_entry.delete(0, tk.END)
+		username = password = ''
+		inbox.hide()
+		outbox.hide()
+		message.hide()
 	
 	def send_onclick():
 		email = email_entry.get()
@@ -53,9 +70,9 @@ def gui():
 	notebook = ttk.Notebook(root)
 	notebook.pack(expand=True, fill='both')
 	user = Tab(notebook, " User", 'user.png')
-	inbox = Tab(notebook, " Inbox", 'inbox.png')
-	outbox = Tab(notebook, " Outbox", 'outbox.png')
-	message = Tab(notebook, " Message", 'message.png')
+	inbox = Tab(notebook, " Inbox", 'inbox.png').hide()
+	outbox = Tab(notebook, " Outbox", 'outbox.png').hide()
+	message = Tab(notebook, " Message", 'message.png').hide()
 	
 	# User #
 	login_frame = ttk.Frame(user.frame)
@@ -68,8 +85,7 @@ def gui():
 	password_entry = ttk.Entry(login_frame, font=('Arial', 14, 'bold'), show='*')
 	password_entry.grid(row=1, column=1, sticky='ew')
 	ttk.Button(user.frame, text="Login", command=login_onclick).pack(padx=(WIDTH_MIN / 3), fill='x')
-	status_frame = ttk.Frame(user.frame)
-	status_frame.pack(anchor='w', padx=40, pady=20)
+	ttk.Button(user.frame, text="Logout", command=logout_onclick).pack(padx=(WIDTH_MIN / 3), fill='x', pady=20)
 	
 	# Message #
 	header_frame = ttk.Frame(message.frame)
