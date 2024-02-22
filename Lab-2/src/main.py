@@ -1,6 +1,7 @@
 from os import path
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 
 from theme import black_theme_settings
 
@@ -32,6 +33,12 @@ def gui():
 		
 		ttk.Label(status_frame, text="Status:").pack(side='left')
 		ttk.Label(status_frame, text="Logged in", foreground='green').pack(side='left')
+	
+	def send_onclick():
+		email = email_entry.get()
+		subject = subject_entry.get()
+		text = text_entry.get('1.0', 'end-1c').strip()
+		confirm = messagebox.askyesno("Confirmation", "Are you certain you want to send this email message?")
 	
 	root = tk.Tk()
 	root.title("EMail Client")
@@ -74,8 +81,10 @@ def gui():
 	ttk.Label(header_frame, text="Subject: ").grid(row=1, column=0)
 	subject_entry = ttk.Entry(header_frame, font=('Arial', 14, 'bold'))
 	subject_entry.grid(row=1, column=1, sticky='ew')
-	text = tk.Text(
-		message.frame,
+	text_frame = ttk.Frame(message.frame)
+	text_frame.pack(expand=True, fill='both')
+	text_entry = tk.Text(
+		text_frame,
 		background='black',
 		foreground='white',
 		insertbackground='white',
@@ -86,10 +95,10 @@ def gui():
 		width=0,
 		height=0
 	)
-	text.pack(expand=True, fill='both')
-	vsb = AutoScrollbar(message.frame, orient='vertical', command=text.yview)
-	text.configure(yscrollcommand=vsb.set)
-	ttk.Button(message.frame, text="Send").pack(side='bottom', fill='x')
+	text_entry.pack(side='left', expand=True, fill='both')
+	vsb = AutoScrollbar(text_frame, orient='vertical', command=text_entry.yview)
+	text_entry.configure(yscrollcommand=vsb.set)
+	ttk.Button(message.frame, text="Send", command=send_onclick).pack(side='bottom', fill='x')
 	
 	root.mainloop()
 
