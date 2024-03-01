@@ -4,14 +4,14 @@ from tkinter import ttk
 from tkinter import messagebox
 
 from theme import black_theme_settings
-from email_client import SMTP
+from email_client import SMTP, IMAP
 
 IMG_DIR = path.abspath(path.join(path.dirname(__file__), path.pardir, 'img'))
 WIDTH_MIN = 600
 HEIGHT_MIN = 400
 
 
-def gui(smtp_client: SMTP):
+def gui(smtp_client: SMTP, imap_client: IMAP):
 	class Tab:
 		def __init__(self, parent: ttk.Notebook, title: str, image_png: str):
 			self.frame = ttk.Frame(parent)
@@ -39,7 +39,7 @@ def gui(smtp_client: SMTP):
 		username = username_entry.get()
 		password = password_entry.get()
 		
-		if smtp_client.login(username, password) is True:
+		if smtp_client.login(username, password) and imap_client.login(username, password):
 			inbox.show()
 			outbox.show()
 			message.show()
@@ -48,9 +48,9 @@ def gui(smtp_client: SMTP):
 	
 	def logout_onclick():
 		smtp_client.logout()
+		imap_client.logout()
 		username_entry.delete(0, tk.END)
 		password_entry.delete(0, tk.END)
-		username = password = ''
 		inbox.hide()
 		outbox.hide()
 		message.hide()
@@ -126,5 +126,5 @@ def gui(smtp_client: SMTP):
 
 
 if __name__ == '__main__':
-	with SMTP() as smtp:
-		gui(smtp)
+	with SMTP() as smtp, IMAP() as imap:
+		gui(smtp, imap)
