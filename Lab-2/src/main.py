@@ -60,6 +60,8 @@ def gui(smtp_client: SMTP):
 		subject = subject_entry.get()
 		text = text_entry.get('1.0', 'end-1c').strip()
 		confirm = messagebox.askyesno("Confirmation", "Are you certain you want to send this email message?")
+		if confirm:
+			smtp_client.send(email, subject, text)
 	
 	root = tk.Tk()
 	root.title("EMail Client")
