@@ -9,7 +9,7 @@ black_theme_settings = {
 	},
 	'TNotebook': {
 		'configure': {
-			"padding": [-1, 0],
+			"padding": [-2, 0],
 			"tabposition": 'n',
 		}
 	},
@@ -55,5 +55,21 @@ black_theme_settings = {
 				('active', 'gray15')
 			]
 		}
-	}
+	},
+	'Treeview': {
+		'configure': {
+			'fieldbackground': 'black',
+			'rowheight': 40
+		},
+		'map': {
+			'background': [
+				('selected', 'gray30')
+			]
+		}
+	},
+	'Treeview.Heading': {
+		'configure': {
+			'relief': 'sunken'
+		}
+	},
 }

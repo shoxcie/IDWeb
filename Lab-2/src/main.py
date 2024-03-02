@@ -43,6 +43,7 @@ def gui(smtp_client: SMTP, imap_client: IMAP):
 			inbox.show()
 			outbox.show()
 			message.show()
+			inbox_table_refresh_onclick()
 		else:
 			messagebox.showerror(title="Error", message="Failed to log in :(")
 	
@@ -54,6 +55,17 @@ def gui(smtp_client: SMTP, imap_client: IMAP):
 		inbox.hide()
 		outbox.hide()
 		message.hide()
+	
+	def inbox_table_onclick(event):
+		if inbox_table.selection():
+			item = inbox_table.selection()[0]
+			index = inbox_table.index(item)
+			print("Clicked row index:", index)
+	
+	def inbox_table_refresh_onclick():
+		messages = imap_client.read()
+		for msg in messages:
+			inbox_table.insert('', tk.END, values=msg)
 	
 	def send_onclick():
 		email = email_entry.get()
@@ -93,6 +105,32 @@ def gui(smtp_client: SMTP, imap_client: IMAP):
 	ttk.Button(user.frame, text="Login", command=login_onclick).pack(padx=(WIDTH_MIN / 3), fill='x')
 	ttk.Button(user.frame, text="Logout", command=logout_onclick).pack(padx=(WIDTH_MIN / 3), fill='x', pady=20)
 	
+	# # # # # # # # # #
+	notebook.select(1)
+	test_data = []
+	for n in range(0, 20):
+		test_data.append((f"Datetime{n}", f"Subject{n}", f"Email{n}"))
+	# # # # # # # # # #
+	
+	# Inbox #
+	inbox_table_frame = ttk.Frame(inbox.frame)
+	inbox_table_frame.pack(fill='both', expand=True)
+	inbox_table = ttk.Treeview(inbox_table_frame, columns=("Date", "Subject", "Email"), show='headings')
+	inbox_table.pack(side='left', fill='both', expand=True)
+	inbox_table_vsb = AutoScrollbar(inbox_table_frame, orient='vertical', command=inbox_table.yview)
+	inbox_table.configure(yscrollcommand=inbox_table_vsb.set)
+	inbox_table.bind('<ButtonRelease-1>', inbox_table_onclick)
+	inbox_table.heading('Date', text="Date")
+	inbox_table.heading('Subject', text="Subject")
+	inbox_table.heading('Email', text="Email")
+	inbox_table.column('Date', width=100, stretch=False)
+	inbox_table.column('Email', width=100)
+	
+	# # # # # # # # # #
+	for data in test_data:
+		inbox_table.insert('', tk.END, values=data)
+	# # # # # # # # # #
+	
 	# Message #
 	header_frame = ttk.Frame(message.frame)
 	header_frame.pack(padx=40, pady=20, fill='x')
@@ -118,8 +156,8 @@ def gui(smtp_client: SMTP, imap_client: IMAP):
 		height=0
 	)
 	text_entry.pack(side='left', expand=True, fill='both')
-	vsb = AutoScrollbar(text_frame, orient='vertical', command=text_entry.yview)
-	text_entry.configure(yscrollcommand=vsb.set)
+	text_vsb = AutoScrollbar(text_frame, orient='vertical', command=text_entry.yview)
+	text_entry.configure(yscrollcommand=text_vsb.set)
 	ttk.Button(message.frame, text="Send", command=send_onclick).pack(side='bottom', fill='x')
 	
 	root.mainloop()

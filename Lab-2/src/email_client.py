@@ -117,3 +117,31 @@ class IMAP:
 			if status:
 				print("[IMAP_LOG]: Successful login")
 			return status
+	
+	def read(self) -> list[tuple[str, str, str, str]]:
+		messages = []
+		typ, data = self.__session.search(None, 'ALL')
+		
+		if len(data[0]) > 0:
+			for num in data[0].split():
+				typ, data = self.__session.fetch(num, '(RFC822)')
+				msg = email.message_from_bytes(data[0][1])
+				
+				msg_from = parseaddr(msg.get('From'))[1]
+				
+				msg_date = parsedate_to_datetime(msg.get('Date')).astimezone(get_localzone()).strftime('%Y-%m-%d %H:%M')
+				
+				msg_subj, encoding = decode_header(msg.get('Subject'))[0]
+				if encoding is not None:
+					msg_subj = msg_subj.decode(encoding)
+				
+				msg_text = ''
+				for part in msg.walk():
+					if part.get_content_maintype() == 'text' and part.get_content_subtype() == 'plain':
+						msg_text = part.get_payload()
+						if part.get('Content-Transfer-Encoding') == 'base64':
+							msg_text = base64.b64decode(msg_text).decode('utf-8')
+				
+				messages.append((msg_date, msg_subj, msg_from, msg_text))
+		
+		return messages
