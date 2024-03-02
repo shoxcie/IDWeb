@@ -4,14 +4,14 @@ from tkinter import ttk
 from tkinter import messagebox
 
 from theme import black_theme_settings
-from email_client import SMTP
+from email_client import SMTP, IMAP
 
 IMG_DIR = path.abspath(path.join(path.dirname(__file__), path.pardir, 'img'))
 WIDTH_MIN = 600
 HEIGHT_MIN = 400
 
 
-def gui(smtp_client: SMTP):
+def gui(smtp_client: SMTP, imap_client: IMAP):
 	class Tab:
 		def __init__(self, parent: ttk.Notebook, title: str, image_png: str):
 			self.frame = ttk.Frame(parent)
@@ -39,27 +39,41 @@ def gui(smtp_client: SMTP):
 		username = username_entry.get()
 		password = password_entry.get()
 		
-		if smtp_client.login(username, password) is True:
+		if smtp_client.login(username, password) and imap_client.login(username, password):
 			inbox.show()
 			outbox.show()
 			message.show()
+			inbox_table_refresh_onclick()
 		else:
 			messagebox.showerror(title="Error", message="Failed to log in :(")
 	
 	def logout_onclick():
 		smtp_client.logout()
+		imap_client.logout()
 		username_entry.delete(0, tk.END)
 		password_entry.delete(0, tk.END)
-		username = password = ''
 		inbox.hide()
 		outbox.hide()
 		message.hide()
+	
+	def inbox_table_onclick(event):
+		if inbox_table.selection():
+			item = inbox_table.selection()[0]
+			index = inbox_table.index(item)
+			print("Clicked row index:", index)
+	
+	def inbox_table_refresh_onclick():
+		messages = imap_client.read()
+		for msg in messages:
+			inbox_table.insert('', tk.END, values=msg)
 	
 	def send_onclick():
 		email = email_entry.get()
 		subject = subject_entry.get()
 		text = text_entry.get('1.0', 'end-1c').strip()
 		confirm = messagebox.askyesno("Confirmation", "Are you certain you want to send this email message?")
+		if confirm:
+			smtp_client.send(email, subject, text)
 	
 	root = tk.Tk()
 	root.title("EMail Client")
@@ -91,6 +105,32 @@ def gui(smtp_client: SMTP):
 	ttk.Button(user.frame, text="Login", command=login_onclick).pack(padx=(WIDTH_MIN / 3), fill='x')
 	ttk.Button(user.frame, text="Logout", command=logout_onclick).pack(padx=(WIDTH_MIN / 3), fill='x', pady=20)
 	
+	# # # # # # # # # #
+	notebook.select(1)
+	test_data = []
+	for n in range(0, 20):
+		test_data.append((f"Datetime{n}", f"Subject{n}", f"Email{n}"))
+	# # # # # # # # # #
+	
+	# Inbox #
+	inbox_table_frame = ttk.Frame(inbox.frame)
+	inbox_table_frame.pack(fill='both', expand=True)
+	inbox_table = ttk.Treeview(inbox_table_frame, columns=("Date", "Subject", "Email"), show='headings')
+	inbox_table.pack(side='left', fill='both', expand=True)
+	inbox_table_vsb = AutoScrollbar(inbox_table_frame, orient='vertical', command=inbox_table.yview)
+	inbox_table.configure(yscrollcommand=inbox_table_vsb.set)
+	inbox_table.bind('<ButtonRelease-1>', inbox_table_onclick)
+	inbox_table.heading('Date', text="Date")
+	inbox_table.heading('Subject', text="Subject")
+	inbox_table.heading('Email', text="Email")
+	inbox_table.column('Date', width=100, stretch=False)
+	inbox_table.column('Email', width=100)
+	
+	# # # # # # # # # #
+	for data in test_data:
+		inbox_table.insert('', tk.END, values=data)
+	# # # # # # # # # #
+	
 	# Message #
 	header_frame = ttk.Frame(message.frame)
 	header_frame.pack(padx=40, pady=20, fill='x')
@@ -116,13 +156,13 @@ def gui(smtp_client: SMTP):
 		height=0
 	)
 	text_entry.pack(side='left', expand=True, fill='both')
-	vsb = AutoScrollbar(text_frame, orient='vertical', command=text_entry.yview)
-	text_entry.configure(yscrollcommand=vsb.set)
+	text_vsb = AutoScrollbar(text_frame, orient='vertical', command=text_entry.yview)
+	text_entry.configure(yscrollcommand=text_vsb.set)
 	ttk.Button(message.frame, text="Send", command=send_onclick).pack(side='bottom', fill='x')
 	
 	root.mainloop()
 
 
 if __name__ == '__main__':
-	with SMTP() as smtp:
-		gui(smtp)
+	with SMTP() as smtp, IMAP() as imap:
+		gui(smtp, imap)
