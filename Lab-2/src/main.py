@@ -41,7 +41,6 @@ def gui(smtp_client: SMTP, imap_client: IMAP):
 		
 		if smtp_client.login(username, password) and imap_client.login(username, password):
 			inbox.show()
-			outbox.show()
 			message.show()
 			inbox_table_refresh_onclick()
 		else:
@@ -53,7 +52,6 @@ def gui(smtp_client: SMTP, imap_client: IMAP):
 		username_entry.delete(0, tk.END)
 		password_entry.delete(0, tk.END)
 		inbox.hide()
-		outbox.hide()
 		message.hide()
 	
 	def inbox_table_onclick(event):
@@ -68,7 +66,7 @@ def gui(smtp_client: SMTP, imap_client: IMAP):
 			subject_entry.insert(0, msg[1])
 			text_entry.delete(1.0, tk.END)
 			text_entry.insert(tk.END, msg[3])
-			notebook.select(3)
+			notebook.select(2)
 	
 	def inbox_table_refresh_onclick():
 		for item in inbox_table.get_children():
@@ -104,7 +102,6 @@ def gui(smtp_client: SMTP, imap_client: IMAP):
 	notebook.pack(expand=True, fill='both')
 	user = Tab(notebook, " User", 'user.png')
 	inbox = Tab(notebook, " Inbox", 'inbox.png').hide()
-	outbox = Tab(notebook, " Outbox", 'outbox.png').hide()
 	message = Tab(notebook, " Message", 'message.png').hide()
 	
 	# User #
