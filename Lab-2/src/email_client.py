@@ -37,7 +37,7 @@ class SMTP:
 			self.__session = None
 			self.__username = ''
 			if status:
-				print("[SMTP_LOG]: Successful logout")
+				print("[SMTP_LOG]: Logged out")
 		return status
 	
 	def login(self, username: str, password: str) -> bool:
@@ -62,7 +62,7 @@ class SMTP:
 			self.logout()
 		finally:
 			if status:
-				print("[SMTP_LOG]: Successful login")
+				print("[SMTP_LOG]: Logged in")
 			return status
 	
 	def send(self, address: str, subject: str, text: str):
@@ -85,13 +85,10 @@ class IMAP:
 	def logout(self) -> bool:
 		status = True
 		if self.__session:
-			status = (
-					'OK' == self.__session.close()[0] and
-					'BYE' == self.__session.logout()[0]
-			)
+			status = 'BYE' == self.__session.logout()[0]
 			self.__session = None
 			if status:
-				print("[IMAP_LOG]: Successful logout")
+				print("[IMAP_LOG]: Logged out")
 		return status
 	
 	def login(self, username: str, password: str) -> bool:
@@ -105,43 +102,49 @@ class IMAP:
 			host = f'smtp.{domain}'
 			
 			self.__session = imaplib.IMAP4_SSL(host)
-			
-			status = (
-				'OK' == self.__session.login(username, password)[0] and
-				'OK' == self.__session.select('INBOX', readonly=True)[0]
-			)
+			status = 'OK' == self.__session.login(username, password)[0]
 		except Exception as e:
 			print("[IMAP_EXCEPT]:", type(e), e)
 			self.logout()
 		finally:
 			if status:
-				print("[IMAP_LOG]: Successful login")
+				print("[IMAP_LOG]: Logged in")
 			return status
 	
 	def read(self) -> list[tuple[str, str, str, str]]:
 		messages = []
-		typ, data = self.__session.search(None, 'ALL')
 		
-		if len(data[0]) > 0:
-			for num in data[0].split():
-				typ, data = self.__session.fetch(num, '(RFC822)')
-				msg = email.message_from_bytes(data[0][1])
-				
-				msg_from = parseaddr(msg.get('From'))[1]
-				
-				msg_date = parsedate_to_datetime(msg.get('Date')).astimezone(get_localzone()).strftime('%Y-%m-%d %H:%M')
-				
-				msg_subj, encoding = decode_header(msg.get('Subject'))[0]
-				if encoding is not None:
-					msg_subj = msg_subj.decode(encoding)
-				
-				msg_text = ''
-				for part in msg.walk():
-					if part.get_content_maintype() == 'text' and part.get_content_subtype() == 'plain':
-						msg_text = part.get_payload()
-						if part.get('Content-Transfer-Encoding') == 'base64':
-							msg_text = base64.b64decode(msg_text).decode('utf-8')
-				
-				messages.append((msg_date, msg_subj, msg_from, msg_text))
-		
-		return messages
+		try:
+			self.__session.select('INBOX', readonly=True)
+			typ, data = self.__session.search(None, 'ALL')
+			
+			if len(data[0]) > 0:
+				for num in data[0].split():
+					typ, data = self.__session.fetch(num, '(RFC822)')
+					msg = email.message_from_bytes(data[0][1])
+					
+					msg_from = parseaddr(msg.get('From'))[1]
+					
+					msg_date = parsedate_to_datetime(msg.get('Date')).astimezone(get_localzone()).strftime('%d-%m-%Y %H:%M')
+					
+					msg_subj, encoding = decode_header(msg.get('Subject'))[0]
+					if encoding is not None:
+						msg_subj = msg_subj.decode(encoding)
+					
+					msg_text = ''
+					for part in msg.walk():
+						if part.get_content_maintype() == 'text' and part.get_content_subtype() == 'plain':
+							msg_text = part.get_payload()
+							if part.get('Content-Transfer-Encoding') == 'base64':
+								msg_text = base64.b64decode(msg_text).decode('utf-8')
+					
+					messages.append((msg_date, msg_subj, msg_from, msg_text))
+			
+			self.__session.close()
+		except Exception as e:
+			print("[IMAP_EXCEPT]:", type(e), e)
+			self.logout()
+		finally:
+			if messages:
+				print("[IMAP_LOG]: Mail received")
+			return messages

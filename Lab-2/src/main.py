@@ -63,7 +63,12 @@ def gui(smtp_client: SMTP, imap_client: IMAP):
 			print("Clicked row index:", index)
 	
 	def inbox_table_refresh_onclick():
+		for item in inbox_table.get_children():
+			inbox_table.delete(item)
+		
 		messages = imap_client.read()
+		messages.reverse()
+		
 		for msg in messages:
 			inbox_table.insert('', tk.END, values=msg)
 	
@@ -115,7 +120,7 @@ def gui(smtp_client: SMTP, imap_client: IMAP):
 	# Inbox #
 	inbox_table_frame = ttk.Frame(inbox.frame)
 	inbox_table_frame.pack(fill='both', expand=True)
-	inbox_table = ttk.Treeview(inbox_table_frame, columns=("Date", "Subject", "Email"), show='headings')
+	inbox_table = ttk.Treeview(inbox_table_frame, columns=("Date", "Subject", "Email"), show='headings', height=0)
 	inbox_table.pack(side='left', fill='both', expand=True)
 	inbox_table_vsb = AutoScrollbar(inbox_table_frame, orient='vertical', command=inbox_table.yview)
 	inbox_table.configure(yscrollcommand=inbox_table_vsb.set)
@@ -123,8 +128,9 @@ def gui(smtp_client: SMTP, imap_client: IMAP):
 	inbox_table.heading('Date', text="Date")
 	inbox_table.heading('Subject', text="Subject")
 	inbox_table.heading('Email', text="Email")
-	inbox_table.column('Date', width=100, stretch=False)
-	inbox_table.column('Email', width=100)
+	inbox_table.column('Date', width=150, stretch=False)
+	inbox_table.column('Email', width=50)
+	ttk.Button(inbox.frame, text="Refresh", command=inbox_table_refresh_onclick).pack(side='bottom', fill='x')
 	
 	# # # # # # # # # #
 	for data in test_data:
