@@ -60,16 +60,26 @@ def gui(smtp_client: SMTP, imap_client: IMAP):
 		if inbox_table.selection():
 			item = inbox_table.selection()[0]
 			index = inbox_table.index(item)
-			print("Clicked row index:", index)
+			msg = inbox_messages[index]
+			
+			email_entry.delete(0, tk.END)
+			email_entry.insert(0, msg[2])
+			subject_entry.delete(0, tk.END)
+			subject_entry.insert(0, msg[1])
+			text_entry.delete(1.0, tk.END)
+			text_entry.insert(tk.END, msg[3])
+			notebook.select(3)
 	
 	def inbox_table_refresh_onclick():
 		for item in inbox_table.get_children():
 			inbox_table.delete(item)
+		inbox_messages.clear()
 		
 		messages = imap_client.read()
 		messages.reverse()
 		
 		for msg in messages:
+			inbox_messages.append(msg)
 			inbox_table.insert('', tk.END, values=msg)
 	
 	def send_onclick():
@@ -110,14 +120,8 @@ def gui(smtp_client: SMTP, imap_client: IMAP):
 	ttk.Button(user.frame, text="Login", command=login_onclick).pack(padx=(WIDTH_MIN / 3), fill='x')
 	ttk.Button(user.frame, text="Logout", command=logout_onclick).pack(padx=(WIDTH_MIN / 3), fill='x', pady=20)
 	
-	# # # # # # # # # #
-	notebook.select(1)
-	test_data = []
-	for n in range(0, 20):
-		test_data.append((f"Datetime{n}", f"Subject{n}", f"Email{n}"))
-	# # # # # # # # # #
-	
 	# Inbox #
+	inbox_messages = []
 	inbox_table_frame = ttk.Frame(inbox.frame)
 	inbox_table_frame.pack(fill='both', expand=True)
 	inbox_table = ttk.Treeview(inbox_table_frame, columns=("Date", "Subject", "Email"), show='headings', height=0)
@@ -131,11 +135,6 @@ def gui(smtp_client: SMTP, imap_client: IMAP):
 	inbox_table.column('Date', width=150, stretch=False)
 	inbox_table.column('Email', width=50)
 	ttk.Button(inbox.frame, text="Refresh", command=inbox_table_refresh_onclick).pack(side='bottom', fill='x')
-	
-	# # # # # # # # # #
-	for data in test_data:
-		inbox_table.insert('', tk.END, values=data)
-	# # # # # # # # # #
 	
 	# Message #
 	header_frame = ttk.Frame(message.frame)
